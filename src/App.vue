@@ -495,7 +495,7 @@ export default {
 			this.log('getPartsRequestHeaders() - BEGIN');
 
 			this.requestBody.payload= {
-					"q" : "SELECT transaction.*, location.name FROM transaction INNER JOIN location on location.id=transaction.transferlocation WHERE location.name='CA01-WOAK2'"
+					"q" : `SELECT transaction.*, location.name FROM transaction INNER JOIN location on location.id=transaction.transferlocation WHERE location.name='CA01-WOAK2'` //  ${this.ofs.props.technicianId.value}
 			}			
 
 			// Get the part request headers
@@ -622,7 +622,7 @@ export default {
 			this.selectedPartRequestId = item.requestId;
 
 			this.requestBody.payload= {
-					"q" : "SELECT transaction.shipcarrier, transaction.custbody_bi_call_number, transaction.custbody_bi_track_num, transactionline.*  FROM transaction, location, transactionline WHERE location.name='CA01-WOAK2' AND  location.id=transaction.transferlocation AND transactionline.transaction=transaction.id AND transactionline.quantity > 0 AND transaction.tranid = '" + this.selectedPartRequestId + "'"
+					"q" : `SELECT transaction.shipcarrier, transaction.custbody_bi_call_number, transaction.custbody_bi_track_num, transactionline.*  FROM transaction, location, transactionline WHERE location.name='CA01-WOAK2' AND  location.id=transaction.transferlocation AND transactionline.transaction=transaction.id AND transactionline.quantity > 0 AND transaction.tranid = '` + this.selectedPartRequestId + "'" //  ${this.ofs.props.technicianId.value}
 			}
 
 			//Get the part request number
@@ -783,7 +783,7 @@ export default {
 			// Set properties from the Activity
 			if (typeof ofsData.activity !== 'undefined')
 			{
-				this.ofs.props.callId.value = ofsData.activity.burrough_task_callid;
+				this.ofs.props.callId.value = ofsData.activity.call_id;
 			}
 
 			// Set properties from the Resource
@@ -799,16 +799,19 @@ export default {
 		initializePlugin: function () {
 			this.log('initializePlugin() - BEGIN');
 
-			// Check the plugin configuration.  If it is valid initialize the plugin.
-			if (this.validatePluginConfiguration() === true) {
+			this.getPartsRequestHeaders();
 
-				// Get the parts request headers
-				this.getPartsRequestHeaders();
 
-			} else {
+			// // Check the plugin configuration.  If it is valid initialize the plugin.
+			// if (this.validatePluginConfiguration() === true) {
 
-				this.showSnackBar('red', 'Some expected configuration values or properties are missing or invalid!  Check the plugin configuration and verify the necessary data elements in OFS are populated with data.', 10000);
-			}
+			// 	// Get the parts request headers
+			// 	this.getPartsRequestHeaders();
+
+			// } else {
+
+			// 	this.showSnackBar('red', 'Some expected configuration values or properties are missing or invalid!  Check the plugin configuration and verify the necessary data elements in OFS are populated with data.', 10000);
+			// }
 
 		},
 
