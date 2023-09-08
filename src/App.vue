@@ -247,6 +247,11 @@ export default {
 					value: null,
 					required: false
 				},
+				orderNumber: {
+					description: 'The Burrough Order Number (Activity Order Number)',
+					value: null,
+					required: false
+				},
 				technicianId: {
 					description: 'The Burrough Technician ID (OFS external ID)',
 					value: null,
@@ -495,7 +500,7 @@ export default {
 			this.log('getPartsRequestHeaders() - BEGIN');
 
 			this.requestBody.payload= {
-					"q" : `SELECT transaction.*, location.name FROM transaction INNER JOIN location on location.id=transaction.transferlocation WHERE location.name='CA01-WOAK2'` //  ${this.ofs.props.technicianId.value}
+					"q" : "SELECT transaction.*, location.name FROM transaction, location WHERE location.id=transaction.transferlocation AND transaction.recordtype IN (null,'transferorder','purchaseorder') AND location.name='"+ this.ofs.props.technicianId.value + "' AND (transaction.custbody_bi_call_number LIKE '"+ this.ofs.props.orderNumber.value +"%' OR transaction.custbody_bi_call_number='" + this.ofs.props.orderNumber.value + "')"
 			}			
 
 			// Get the part request headers
@@ -527,7 +532,7 @@ export default {
 								requestId : item.tranid,
 								status : item.status,
 								customer : item.shippingaddress,
-								callId : item.id,
+								callId : this.ofs.props.callId.value,
 								dateShipped : item.shipdate,
 								whCode: item.name
 							});
@@ -622,7 +627,7 @@ export default {
 			this.selectedPartRequestId = item.requestId;
 
 			this.requestBody.payload= {
-					"q" : `SELECT transaction.shipcarrier, transaction.custbody_bi_call_number, transaction.custbody_bi_track_num, transactionline.*  FROM transaction, location, transactionline WHERE location.name='CA01-WOAK2' AND  location.id=transaction.transferlocation AND transactionline.transaction=transaction.id AND transactionline.quantity > 0 AND transaction.tranid = '` + this.selectedPartRequestId + "'" //  ${this.ofs.props.technicianId.value}
+					"q" : "SELECT transaction.shipcarrier, transaction.custbody_bi_call_number, transaction.custbody_bi_track_num, transactionline.*  FROM transaction, location, transactionline WHERE location.name='"+ this.ofs.props.technicianId.value +"' AND transaction.recordtype IN (null,'transferorder','purchaseorder') AND  location.id=transaction.transferlocation AND transactionline.transaction=transaction.id AND transactionline.quantity > 0 AND transaction.tranid = '" + this.selectedPartRequestId + "' AND (custbody_bi_call_number LIKE '"+ this.ofs.props.orderNumber.value +"%' OR custbody_bi_call_number='" + this.ofs.props.orderNumber.value + "')"
 			}
 
 			//Get the part request number
@@ -682,7 +687,7 @@ export default {
 				listpartID.forEach(function (partID){
 					//Get Part Detail
 					self.requestBody.payload= {
-							"q" : "SELECT transactionline.quantity, transactionline.expectedshipdate, transactionline.transactionlinetype, item.*  FROM transaction, location, transactionline, item WHERE location.name='CA01-WOAK2' AND  location.id=transaction.transferlocation AND transactionline.transaction=transaction.id AND transactionline.quantity > 0 AND transaction.tranid = '"+ self.selectedPartRequestId +"' AND item.id=transactionline.item AND item.id = '" + partID + "'"
+							"q" : "SELECT transactionline.quantity, transactionline.expectedshipdate, transactionline.transactionlinetype, item.*  FROM transaction, location, transactionline, item WHERE location.name='"+ this.ofs.props.technicianId.value + "' AND  location.id=transaction.transferlocation AND transactionline.transaction=transaction.id AND transactionline.quantity > 0 AND transaction.tranid = '"+ self.selectedPartRequestId +"' AND item.id=transactionline.item AND item.id = '" + partID + "'"
 					}
 
 					// Pull Order Detail...
@@ -783,12 +788,15 @@ export default {
 			// Set properties from the Activity
 			if (typeof ofsData.activity !== 'undefined')
 			{
-				this.ofs.props.callId.value = ofsData.activity.call_id;
+				this.ofs.props.callId.value = ofsData.activity.aid;
 			}
+			this.ofs.props.orderNumber.value = ofsData.activity.order_number;
 
 			// Set properties from the Resource
-			this.ofs.props.technicianId.value = ofsData.resource.external_id;
+			this.ofs.props.technicianId.value = ofsData.resource.techinvsiteid;
 			this.ofs.props.lob.value = ofsData.resource.burrough_resource_lob;
+
+			this.log(this.ofs.props);
 
 
 			this.initializePlugin();
