@@ -61,56 +61,56 @@ export default {
 			this.log(requestObj);
 
 			let self = this;
-			let xhttp = new XMLHttpRequest();
-
-			xhttp.onreadystatechange = function () {
-
-				if (this.readyState === 4) {
-
-					if (this.status === 200 || this.status === 201) // 200 = OK, 201 = Created
-					{
-						let respObj = null;
-
-						if (xhttp.responseText.length > 0) {
-							respObj = JSON.parse(xhttp.responseText);
-						}
-
-						handler(respObj, endpointUrl, requestObj);
-
-					} else {
-
-						// TODO: Remove this and send to handler instead
-						self.showSnackBar('red', 'Error ' + this.status + ' executing HTTP ' + httpMethod + ' against endpoint: ' + endpointUrl);
-					}
-				}
-			}
-
-			xhttp.open(httpMethod, endpointUrl, true);
-
+			let header = new Headers();
+			let reqBody = null;
 
 			// If credentials were passed, set an Authorization header
 			if (
 				(typeof endpointUser !== 'undefined' && endpointUser !== null && endpointUser.length > 0) &&
 				(typeof endpointPassword !== 'undefined' && endpointPassword !== null && endpointPassword.length > 0)
 			) {
-				xhttp.setRequestHeader('Authorization', 'Basic ' + btoa(endpointUser + ':' + endpointPassword));
-			}
+				header.append('Authorization', 'Basic ' + btoa(endpointUser + ':' + endpointPassword));
+			} 
+			// else if (typeof endpointAuth !== 'undefined'){
+			// 	header.append('Authorization', 'Basic ' + endpointAuth);
+			// }
 
 			// If this is not an HTTP GET set the Content-Type header
 			if (httpMethod !== 'GET') {
-				xhttp.setRequestHeader('Content-Type', 'application/json');
+				header.append('Content-Type', 'application/json');
+				reqBody = JSON.stringify(requestObj.payload);
 			}
+			// else if (httpMethod !== 'GET' && typeof endpointAuth !== 'undefined') {
+			// 	header.append('Content-Type', 'application/x-www-form-urlencoded');
+			// 	header.append('x-merchant-id', 'luXQxc3VY8uF7cI8Uos1f0smKdAN460tCr2C2TGGiAwhhE31');
+			// 	header.append("Access-Control-Allow-Origin", "*");
+			// 	reqBody = new URLSearchParams({
+			// 		'grant_type' : 'client_credentials'
+			// 	});
+			// } else if (httpMethod === 'GET' && typeof bearerToken !=='undefined') {
+			// 	header.append("AccessLicenseNumber", "2DC8B6F9FEB81201");
+			// 	header.append("transId", requestObj);
+			// 	header.append("transactionSrc", "2DC8B6F9FEB81201");
+			// }
 
-
-			if (httpMethod !== 'GET' && (typeof requestObj !== 'undefined' && requestObj !== null) && (typeof requestObj.payload !== 'undefined' && requestObj.payload !== null)) {
-
-				xhttp.send(JSON.stringify(requestObj.payload));
-
-			} else {
-
-				xhttp.send();
-			}
-
+			fetch(endpointUrl,{
+				method: httpMethod,
+				body: reqBody,
+				headers: header
+			}).then((fetchResponse) => {
+				if ((fetchResponse.status === 200 || fetchResponse.status === 210) && fetchResponse.ok === true) {
+					
+					if(handler !== null){
+						handler(fetchResponse, endpointUrl, requestObj);
+					}					
+					
+					return fetchResponse;
+				} else {
+					self.showSnackBar('red', 'Error ' + fetchResponse.status + ' executing HTTP ' + httpMethod + ' against endpoint: ' + endpointUrl);
+				}
+			}).catch((e) => {
+				self.showSnackBar('red', 'makeApiRequestFetch() - ' + e, 3000);
+			})
 		},
 
 
