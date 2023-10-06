@@ -988,7 +988,7 @@ export default {
 
 					//PROD
 					this.requestBody.payload= {
-						"q": "SELECT DISTINCT TRANSACTION.recordtype,TRANSACTION.id,TRANSACTION.tranid,transactionline.transactionlinetype, fromlocation.name AS warehouse_ship_location_id,fromlocation.custrecord_location_description AS Warehouse_ship_location,CUSTOMLIST_BI_LOCATION_TYPES.name AS warehouse_location_Type,locationmainaddress.addrtext AS warehouse_address FROM TRANSACTION INNER JOIN location ON location.id = TRANSACTION.transferlocation INNER JOIN transactionline ON transactionline.TRANSACTION = TRANSACTION.id INNER JOIN Location AS fromlocation ON fromlocation.id = transactionline.location LEFT JOIN CUSTOMLIST_BI_LOCATION_TYPES ON CUSTOMLIST_BI_LOCATION_TYPES.id = fromlocation.custrecord_bi_location_type LEFT JOIN locationmainaddress ON fromlocation.mainaddress = locationmainaddress.nkey INNER JOIN item ON transactionline.item = item.id WHERE TRANSACTION.recordtype IN (NULL,'transferorder','purchaseorder')AND transactionline.transactionlinetype ='SHIPPING' AND (location.name = '"+ this.ofs.props.technicianId.value +"' OR location.id IN ("+ locationID +") OR TRANSACTION.custbody_bi_call_number LIKE '"+ this.ofs.props.orderNumber.value +"%')"
+						"q": "SELECT DISTINCT TRANSACTION.recordtype,TRANSACTION.id,TRANSACTION.tranid,transactionline.transactionlinetype, fromlocation.name AS warehouse_ship_location_id,fromlocation.custrecord_location_description AS Warehouse_ship_location,CUSTOMLIST_BI_LOCATION_TYPES.name AS warehouse_location_Type,locationmainaddress.addrtext AS warehouse_address FROM TRANSACTION LEFT JOIN location ON location.id = TRANSACTION.transferlocation INNER JOIN transactionline ON transactionline.TRANSACTION = TRANSACTION.id INNER JOIN Location AS fromlocation ON fromlocation.id = transactionline.location LEFT JOIN CUSTOMLIST_BI_LOCATION_TYPES ON CUSTOMLIST_BI_LOCATION_TYPES.id = fromlocation.custrecord_bi_location_type LEFT JOIN locationmainaddress ON fromlocation.mainaddress = locationmainaddress.nkey INNER JOIN item ON transactionline.item = item.id WHERE TRANSACTION.recordtype IN (NULL,'transferorder','purchaseorder')AND transactionline.transactionlinetype ='SHIPPING' AND (location.name = '"+ this.ofs.props.technicianId.value +"' OR location.id IN ("+ locationID +") OR TRANSACTION.custbody_bi_call_number LIKE '"+ this.ofs.props.orderNumber.value +"%')"
 					}
 					this.requestBody2.payload= {
 						"q": "SELECT TRANSACTION.shipcarrier, TRANSACTION.shipdate,TRANSACTION.status,TRANSACTION.custbody_bi_call_number, transactionline.quantity as ordered_qty,(transactionline.quantity - transactionline.quantityshiprecv) as pending_qty ,TRANSACTION.custbody_bi_track_num,TRANSACTION.recordtype,transactionstatus.name as Ship_status,TRANSACTION.id,transaction.transferlocation,TRANSACTION.tranid,transactionline.quantity,transactionline.expectedshipdate, transactionline.item,transactionline.transactionlinetype, item.fullname,CUSTOMLIST_BI_LOCATION_TYPES.name as tech_type, location.custrecord_location_description as Tech_name, item.custitem_is_consigned, item.description, transactionshippingaddress.addrtext as ship_to_address,location.name AS Tech_Location_Id,shipitem.itemid AS ship_method FROM TRANSACTION INNER JOIN location ON location.id = TRANSACTION.transferlocation INNER JOIN transactionshippingaddress ON TRANSACTION.shippingaddress = transactionshippingaddress.nkey INNER JOIN transactionline ON transactionline.TRANSACTION = TRANSACTION.id  INNER JOIN shipitem ON transactionline.shipmethod = shipitem.id LEFT JOIN item ON transactionline.item = item.id LEFT JOIN CUSTOMLIST_BI_LOCATION_TYPES ON CUSTOMLIST_BI_LOCATION_TYPES.id = location.custrecord_bi_location_type left join transactionstatus on transaction.type = transactionstatus.trantype AND transaction.status = transactionstatus.id WHERE TRANSACTION.recordtype IN (NULL,'transferorder','purchaseorder')AND transactionline.transactionlinetype = 'RECEIVING' AND (location.name = '"+ this.ofs.props.technicianId.value +"' OR location.id IN ("+ locationID +") OR TRANSACTION.custbody_bi_call_number LIKE '"+ this.ofs.props.orderNumber.value +"%')"
@@ -996,7 +996,7 @@ export default {
 
 					//TEST
 					// this.requestBody.payload= {
-					// 	"q": "SELECT DISTINCT TRANSACTION.recordtype,TRANSACTION.id,TRANSACTION.tranid,transactionline.transactionlinetype, fromlocation.name AS warehouse_ship_location_id,fromlocation.custrecord_location_description AS Warehouse_ship_location,CUSTOMLIST_BI_LOCATION_TYPES.name AS warehouse_location_Type,locationmainaddress.addrtext AS warehouse_address FROM TRANSACTION INNER JOIN location ON location.id = TRANSACTION.transferlocation INNER JOIN transactionline ON transactionline.TRANSACTION = TRANSACTION.id INNER JOIN Location AS fromlocation ON fromlocation.id = transactionline.location LEFT JOIN CUSTOMLIST_BI_LOCATION_TYPES ON CUSTOMLIST_BI_LOCATION_TYPES.id = fromlocation.custrecord_bi_location_type LEFT JOIN locationmainaddress ON fromlocation.mainaddress = locationmainaddress.nkey INNER JOIN item ON transactionline.item = item.id WHERE TRANSACTION.recordtype IN (NULL,'transferorder','purchaseorder')AND transactionline.transactionlinetype ='SHIPPING' AND (location.name = 'TX04-S007' or location.id IN ('2104','2115') OR TRANSACTION.custbody_bi_call_number LIKE 'null%')"
+					// 	"q": "SELECT DISTINCT TRANSACTION.recordtype,TRANSACTION.id,TRANSACTION.tranid,transactionline.transactionlinetype, fromlocation.name AS warehouse_ship_location_id,fromlocation.custrecord_location_description AS Warehouse_ship_location,CUSTOMLIST_BI_LOCATION_TYPES.name AS warehouse_location_Type,locationmainaddress.addrtext AS warehouse_address FROM TRANSACTION LEFT JOIN location ON location.id = TRANSACTION.transferlocation INNER JOIN transactionline ON transactionline.TRANSACTION = TRANSACTION.id INNER JOIN Location AS fromlocation ON fromlocation.id = transactionline.location LEFT JOIN CUSTOMLIST_BI_LOCATION_TYPES ON CUSTOMLIST_BI_LOCATION_TYPES.id = fromlocation.custrecord_bi_location_type LEFT JOIN locationmainaddress ON fromlocation.mainaddress = locationmainaddress.nkey INNER JOIN item ON transactionline.item = item.id WHERE TRANSACTION.recordtype IN (NULL,'transferorder','purchaseorder')AND transactionline.transactionlinetype ='SHIPPING' AND (location.name = 'TX04-S007' or location.id IN ('2104','2115') OR TRANSACTION.custbody_bi_call_number LIKE 'null%')"
 					// }	
 					// this.requestBody2.payload= {
 					// 	"q": "SELECT TRANSACTION.shipcarrier, TRANSACTION.shipdate,TRANSACTION.status,TRANSACTION.custbody_bi_call_number,TRANSACTION.custbody_bi_track_num,transactionstatus.name as Ship_status,transactionline.quantity as ordered_qty,(transactionline.quantity - transactionline.quantityshiprecv) as pending_qty,TRANSACTION.recordtype,TRANSACTION.id,transaction.transferlocation,TRANSACTION.tranid,transactionline.quantity,transactionline.expectedshipdate, transactionline.item,transactionline.transactionlinetype, item.fullname,CUSTOMLIST_BI_LOCATION_TYPES.name as tech_type, location.custrecord_location_description as Tech_name, item.custitem_is_consigned, item.description, transactionshippingaddress.addrtext as ship_to_address,location.name AS Tech_Location_Id,shipitem.itemid AS ship_method FROM TRANSACTION INNER JOIN location ON location.id = TRANSACTION.transferlocation INNER JOIN transactionshippingaddress ON TRANSACTION.shippingaddress = transactionshippingaddress.nkey INNER JOIN transactionline ON transactionline.TRANSACTION = TRANSACTION.id  INNER JOIN shipitem ON transactionline.shipmethod = shipitem.id LEFT JOIN item ON transactionline.item = item.id LEFT JOIN CUSTOMLIST_BI_LOCATION_TYPES ON CUSTOMLIST_BI_LOCATION_TYPES.id = location.custrecord_bi_location_type left join transactionstatus on transaction.type = transactionstatus.trantype AND transaction.status = transactionstatus.id WHERE TRANSACTION.recordtype IN (NULL,'transferorder','purchaseorder')AND transactionline.transactionlinetype = 'RECEIVING' AND (location.name = 'TX04-S007' OR location.id IN ('2104','2115') OR TRANSACTION.custbody_bi_call_number LIKE 'null%')"
@@ -1112,7 +1112,8 @@ export default {
 								shipMethod: '',
 								callId : '',
 								dateShipped : '',
-								whCode: item.warehouse_ship_location
+								whCode: item.warehouse_ship_location,
+								partOrderNumber: ''
 							});
 						});
 
@@ -1135,6 +1136,7 @@ export default {
 									self.tempList.find(value => value.requestId === item.tranid).callId = item.custbody_bi_call_number;
 									self.tempList.find(value => value.requestId === item.tranid).dateShipped = item.shipdate;
 									self.tempList.find(value => value.requestId === item.tranid).shipMethod = item.ship_method;
+									self.tempList.find(value => value.requestId === item.tranid).partOrderNumber = item.id;
 
 									if(item.ship_method.indexOf('Pickup (Will Call)') < 0){
 										self.tempList.find(value => value.requestId === item.tranid).shipAddress = item.ship_to_address.replace(/(\r\n|\n|\r)/gm," ");
@@ -1212,7 +1214,7 @@ export default {
 					apiVersion: 1,
 					method: "callProcedure",
 					procedure: "openLink",
-					callId: item.soNumber,
+					callId: item.soNumber ? item.soNumber : item.itemID,
 					params: {
 						url: trackingURL
 					}
@@ -1266,7 +1268,8 @@ export default {
 					backPluginOpenParams: {
 						techinvsiteid: this.ofs.props.technicianId.value,
 						callId: this.ofs.props.callId.value,
-						custbody_bi_call_number: item.callId
+						custbody_bi_call_number: item.callId,
+						tranid: item.partOrderNumber
 					}
 				}
 
@@ -1318,7 +1321,7 @@ export default {
 
 			//Process ship lines
 			if (listShipline.length > 0) {
-				listShipline.forEach((item) => {			
+				listShipline.forEach((item, index) => {			
 
 				listpartID.push(item.item);
 
@@ -1342,7 +1345,8 @@ export default {
 						eta: item.expectedshipdate,
 						shipQuantity: item.quantity,
 						soNumber: item.custbody_bi_call_number,								
-						lineNumber: item.item
+						lineNumber: item.item,
+						itemID: index + 'abc'
 					});							
 				});
 
