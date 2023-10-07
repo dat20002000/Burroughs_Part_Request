@@ -674,6 +674,8 @@ export default {
 		submitLoading: false,
 		notesLogDialog: false,
 
+		APIcall: 'firstcall',
+
 		note:{
 			userName: '',
 			date: '',
@@ -988,10 +990,11 @@ export default {
 
 					//PROD
 					this.requestBody.payload= {
-						"q": "SELECT DISTINCT TRANSACTION.recordtype,TRANSACTION.id,TRANSACTION.tranid,transactionline.transactionlinetype, fromlocation.name AS warehouse_ship_location_id,fromlocation.custrecord_location_description AS Warehouse_ship_location,CUSTOMLIST_BI_LOCATION_TYPES.name AS warehouse_location_Type,locationmainaddress.addrtext AS warehouse_address FROM TRANSACTION LEFT JOIN location ON location.id = TRANSACTION.transferlocation INNER JOIN transactionline ON transactionline.TRANSACTION = TRANSACTION.id INNER JOIN Location AS fromlocation ON fromlocation.id = transactionline.location LEFT JOIN CUSTOMLIST_BI_LOCATION_TYPES ON CUSTOMLIST_BI_LOCATION_TYPES.id = fromlocation.custrecord_bi_location_type LEFT JOIN locationmainaddress ON fromlocation.mainaddress = locationmainaddress.nkey INNER JOIN item ON transactionline.item = item.id WHERE TRANSACTION.recordtype IN (NULL,'transferorder','purchaseorder')AND transactionline.transactionlinetype ='SHIPPING' AND (location.name = '"+ this.ofs.props.technicianId.value +"' OR location.id IN ("+ locationID +") OR TRANSACTION.custbody_bi_call_number LIKE '"+ this.ofs.props.orderNumber.value +"%')"
+						"q": "SELECT DISTINCT TRANSACTION.recordtype,TRANSACTION.id,TRANSACTION.tranid,transactionline.transactionlinetype, fromlocation.name AS warehouse_ship_location_id,fromlocation.custrecord_location_description AS Warehouse_ship_location,CUSTOMLIST_BI_LOCATION_TYPES.name AS warehouse_location_Type,locationmainaddress.addrtext AS warehouse_address FROM TRANSACTION LEFT JOIN location ON location.id = TRANSACTION.transferlocation INNER JOIN transactionline ON transactionline.TRANSACTION = TRANSACTION.id INNER JOIN Location AS fromlocation ON fromlocation.id = transactionline.location LEFT JOIN CUSTOMLIST_BI_LOCATION_TYPES ON CUSTOMLIST_BI_LOCATION_TYPES.id = fromlocation.custrecord_bi_location_type LEFT JOIN locationmainaddress ON fromlocation.mainaddress = locationmainaddress.nkey INNER JOIN item ON transactionline.item = item.id WHERE TRANSACTION.recordtype IN (NULL,'transferorder','purchaseorder') AND (transactionline.transactionlinetype ='SHIPPING' OR transactionline.transactionlinetype IS NULL) AND (location.name = '"+ this.ofs.props.technicianId.value +"' OR location.id IN ("+ locationID +") OR TRANSACTION.custbody_bi_call_number LIKE '"+ this.ofs.props.orderNumber.value +"%')"
 					}
 					this.requestBody2.payload= {
-						"q": "SELECT TRANSACTION.shipcarrier, TRANSACTION.shipdate,TRANSACTION.status,TRANSACTION.custbody_bi_call_number, transactionline.quantity as ordered_qty,(transactionline.quantity - transactionline.quantityshiprecv) as pending_qty ,TRANSACTION.custbody_bi_track_num,TRANSACTION.recordtype,transactionstatus.name as Ship_status,TRANSACTION.id,transaction.transferlocation,TRANSACTION.tranid,transactionline.quantity,transactionline.expectedshipdate, transactionline.item,transactionline.transactionlinetype, item.fullname,CUSTOMLIST_BI_LOCATION_TYPES.name as tech_type, location.custrecord_location_description as Tech_name, item.custitem_is_consigned, item.description, transactionshippingaddress.addrtext as ship_to_address,location.name AS Tech_Location_Id,shipitem.itemid AS ship_method FROM TRANSACTION INNER JOIN location ON location.id = TRANSACTION.transferlocation INNER JOIN transactionshippingaddress ON TRANSACTION.shippingaddress = transactionshippingaddress.nkey INNER JOIN transactionline ON transactionline.TRANSACTION = TRANSACTION.id  INNER JOIN shipitem ON transactionline.shipmethod = shipitem.id LEFT JOIN item ON transactionline.item = item.id LEFT JOIN CUSTOMLIST_BI_LOCATION_TYPES ON CUSTOMLIST_BI_LOCATION_TYPES.id = location.custrecord_bi_location_type left join transactionstatus on transaction.type = transactionstatus.trantype AND transaction.status = transactionstatus.id WHERE TRANSACTION.recordtype IN (NULL,'transferorder','purchaseorder')AND transactionline.transactionlinetype = 'RECEIVING' AND (location.name = '"+ this.ofs.props.technicianId.value +"' OR location.id IN ("+ locationID +") OR TRANSACTION.custbody_bi_call_number LIKE '"+ this.ofs.props.orderNumber.value +"%')"
+						"q": "SELECT Distinct TRANSACTION.shipcarrier, TRANSACTION.shipdate,TRANSACTION.status,TRANSACTION.custbody_bi_call_number, transactionline.quantity as ordered_qty,(transactionline.quantity - transactionline.quantityshiprecv) as pending_qty ,TRANSACTION.custbody_bi_track_num,TRANSACTION.recordtype,transactionstatus.name as Ship_status,TRANSACTION.id,transaction.transferlocation,TRANSACTION.tranid,transactionline.quantity,transactionline.expectedshipdate, transactionline.item,transactionline.transactionlinetype, item.fullname,CUSTOMLIST_BI_LOCATION_TYPES.name as tech_type, location.custrecord_location_description as Tech_name, item.custitem_is_consigned, item.description, transactionshippingaddress.addrtext as ship_to_address,location.name AS Tech_Location_Id,shipitem.itemid AS ship_method FROM TRANSACTION LEFT JOIN location ON location.id = TRANSACTION.transferlocation INNER JOIN transactionshippingaddress ON TRANSACTION.shippingaddress = transactionshippingaddress.nkey INNER JOIN transactionline ON transactionline.TRANSACTION = TRANSACTION.id  INNER JOIN shipitem ON transactionline.shipmethod = shipitem.id LEFT JOIN item ON transactionline.item = item.id LEFT JOIN CUSTOMLIST_BI_LOCATION_TYPES ON CUSTOMLIST_BI_LOCATION_TYPES.id = location.custrecord_bi_location_type left join transactionstatus on transaction.type = transactionstatus.trantype AND transaction.status = transactionstatus.id WHERE TRANSACTION.recordtype IN (NULL,'transferorder','purchaseorder') AND transactionstatus.name in ('Pending Receipt','Pending Fulfillment','Pending Billing/Partially Received','Pending Supervisor Approval') AND transactionline.quantity > 0 AND (transactionline.transactionlinetype = 'RECEIVING' OR transactionline.transactionlinetype is null) AND (location.name = '"+ this.ofs.props.technicianId.value +"' OR location.id IN ("+ locationID +") OR TRANSACTION.custbody_bi_call_number LIKE '"+ this.ofs.props.orderNumber.value +"%')"
+							 
 					}	
 
 					//TEST
@@ -1005,7 +1008,8 @@ export default {
 					
 					if (this.isOnline) {
 					// Get the part request headers
-						this.makeApiRequest('POST', this.ofs.config.partRequestHeaderEndpoint.value, this.ofs.config.netsuiteUser.value, this.ofs.config.netsuitePassword.value, this.requestBody, this.processPartRequestHeaderResponse);						
+						this.APIcall = 'firstcall';		
+						this.makeApiRequest('POST', this.ofs.config.partRequestHeaderEndpoint.value, this.ofs.config.netsuiteUser.value, this.ofs.config.netsuitePassword.value, this.requestBody, this.processPartRequestHeaderResponse);										
 					}
 					else {
 						this.loadDataFromIndexDBAndPopulateData();
@@ -1094,7 +1098,7 @@ export default {
 					let newDistinctList = null;				
 					if (typeof decode.items !== 'undefined')
 					{														
-						if(decode.items[0].transactionlinetype === 'SHIPPING'){						
+						if(self.APIcall === 'firstcall'){						
 
 						//Remove Dupplicate tranid
 						newDistinctList = decode.items.filter((value, index, self) =>
@@ -1118,9 +1122,9 @@ export default {
 						});
 
 						//Make second call
-						this.makeApiRequest('POST', this.ofs.config.partRequestHeaderEndpoint.value, this.ofs.config.netsuiteUser.value, this.ofs.config.netsuitePassword.value, this.requestBody2, this.processPartRequestHeaderResponse);
-								
-						} else {	
+						self.APIcall = 'secondcall';
+						this.makeApiRequest('POST', this.ofs.config.partRequestHeaderEndpoint.value, this.ofs.config.netsuiteUser.value, this.ofs.config.netsuitePassword.value, this.requestBody2, this.processPartRequestHeaderResponse);														
+						} else if ( self.APIcall === 'secondcall' ) {	
 
 							//Remove Dupplicate tranid
 							newDistinctList = decode.items.filter((value, index, self) =>
@@ -1154,6 +1158,7 @@ export default {
 							await db.partRequest.bulkPut(self.partRequestHeaderItems);
 							await db.part.clear();
 							await db.part.bulkPut(decode.items);
+							self.APIcall = 'firstcall';
 							this.requestResultsLoading = false;
 						}				
 					}					
